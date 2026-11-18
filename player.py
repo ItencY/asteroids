@@ -7,6 +7,7 @@ from constants import (
     PLAYER_SHOOT_SPEED,
     PLAYER_SPEED,
     PLAYER_TURN_SPEED,
+    PLAYER_SHOOT_COOLDOWN_SECONDS,
 )
 from shot import Shot
 
@@ -17,6 +18,7 @@ class Player(CircleShape):
     def __init__(self, x: float, y: float) -> None:
         super().__init__(x, y, radius=PLAYER_RADIUS)
         self.rotation = 0
+        self.shoot_timer = 0
 
     def draw(self, screen: pygame.Surface) -> None:
         pygame.draw.polygon(screen, "white", self.triangle(), width=LINE_WIDTH)
@@ -36,6 +38,7 @@ class Player(CircleShape):
         if keys[pygame.K_s]:
             self.move(-dt)
         if keys[pygame.K_SPACE]:
+            self.shoot_timer -= dt
             self.shoot()
 
     def move(self, dt: float) -> None:
@@ -45,6 +48,9 @@ class Player(CircleShape):
         self.position += rotated_with_speed_vector
 
     def shoot(self) -> "Shot":
+        if self.shoot_timer > 0:
+            return None
+        self.shoot_timer = PLAYER_SHOOT_COOLDOWN_SECONDS
         forward = pygame.Vector2(0, 1).rotate(self.rotation)
         shot = Shot(self.position.x, self.position.y)
         shot.velocity = forward * PLAYER_SHOOT_SPEED
